@@ -10,7 +10,7 @@ Monitor and restart unhealthy docker containers.
 This functionality was proposed to be included with the addition of `HEALTHCHECK`, however it didn't make the cut.
 This container is a stand-in till there is native support for `--exit-on-unhealthy` https://github.com/docker/docker/pull/22719.
 
-[![](https://img.shields.io/docker/pulls/willfarrell/autoheal.svg)](https://hub.docker.com/r/willfarrell/autoheal)  [![](https://images.microbadger.com/badges/image/willfarrell/autoheal.svg)](http://microbadger.com/images/willfarrell/autoheal)
+![GitHub Actions CI](https://github.com/pschmitt/docker-autoheal/workflows/GitHub%20Actions%20CI/badge.svg)[![](https://img.shields.io/docker/pulls/willfarrell/autoheal.svg)](https://hub.docker.com/r/willfarrell/autoheal)  [![](https://images.microbadger.com/badges/image/willfarrell/autoheal.svg)](http://microbadger.com/images/willfarrell/autoheal)
 
 ## Supported tags and Dockerfile links
 - [`1.0.0`,`1.0`,`1`,`latest` (*Dockerfile*)](https://github.com/willfarrell/docker-autoheal/blob/master/Dockerfile)
