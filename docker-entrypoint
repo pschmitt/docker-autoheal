@@ -14,8 +14,13 @@ AUTOHEAL_DEFAULT_STOP_TIMEOUT=${AUTOHEAL_DEFAULT_STOP_TIMEOUT:-10}
 
 # shellcheck disable=2039
 docker_curl() {
-  local api_url
+  curl --max-time "$CURL_TIMEOUT" --no-buffer -s --unix-socket "$DOCKER_SOCK" "$@"
+}
+
+# shellcheck disable=2039
+get_container_info() {
   local label_filter
+  local url
 
   # Set container selector
   if [ "$AUTOHEAL_CONTAINER_LABEL" = "all" ]
@@ -24,8 +29,16 @@ docker_curl() {
   else
     label_filter=",\"label\":\[\"${AUTOHEAL_CONTAINER_LABEL}=true\"\]"
   fi
-  api_url="http://localhost/containers/json?filters=\{\"health\":\[\"unhealthy\"\]${label_filter}\}"
-  curl --max-time "$CURL_TIMEOUT" --no-buffer -s --unix-socket "$DOCKER_SOCK" "$api_url"
+  url="http://localhost/containers/json?filters=\{\"health\":\[\"unhealthy\"\]${label_filter}\}"
+  docker_curl "$url"
+}
+
+# shellcheck disable=2039
+restart_container() {
+  local container_id="$1"
+  local timeout="$2"
+
+  docker_curl -f -X POST "http://localhost/containers/${container_id}/restart?t=${timeout}"
 }
 
 # SIGTERM-handler
@@ -36,7 +49,7 @@ term_handler() {
 # shellcheck disable=2039
 trap 'kill ${!}; term_handler' SIGTERM
 
-if [ "$1" = 'autoheal' ] && [ -e "$DOCKER_SOCK" ]
+if [ "$1" = "autoheal" ] && [ -e "$DOCKER_SOCK" ]
 then
   # https://docs.docker.com/engine/api/v1.25/
 
@@ -50,7 +63,7 @@ then
   while true
   do
     STOP_TIMEOUT=".Labels[\"autoheal.stop.timeout\"] // $AUTOHEAL_DEFAULT_STOP_TIMEOUT"
-    docker_curl | \
+    get_container_info | \
       jq -r "foreach .[] as \$CONTAINER([];[]; \$CONTAINER | .Id, .Names[0], ${STOP_TIMEOUT})" | \
       while read -r CONTAINER_ID && read -r CONTAINER_NAME && read -r TIMEOUT
     do
@@ -62,7 +75,7 @@ then
         echo "$DATE Container name of (${CONTAINER_SHORT_ID}) is null, which implies container does not exist - don't restart" >&2
       else
         echo "$DATE Container $CONTAINER_NAME (${CONTAINER_SHORT_ID}) found to be unhealthy - Restarting container now with ${TIMEOUT}s timeout"
-        if ! docker_curl -f -XPOST "http://localhost/containers/${CONTAINER_ID}/restart?t=${TIMEOUT}"
+        if ! restart_container "$CONTAINER_ID" "$TIMEOUT"
         then
           echo "$DATE Restarting container $CONTAINER_SHORT_ID failed" >&2
         fi
