@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
 set -e
+# shellcheck disable=2039
 set -o pipefail
 
 DOCKER_SOCK=${DOCKER_SOCK:-/var/run/docker.sock}
@@ -32,6 +33,7 @@ docker_curl() {
   curl --max-time "$CURL_TIMEOUT" --no-buffer -s --unix-socket "$DOCKER_SOCK" "$api_url"
 }
 
+# shellcheck disable=2039
 trap 'kill ${!}; term_handler' SIGTERM
 
 if [ "$1" = 'autoheal' ] && [ -e "$DOCKER_SOCK" ]
