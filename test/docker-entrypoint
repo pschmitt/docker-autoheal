@@ -4,12 +4,12 @@ set -e
 if [ "$1" = 'unhealthy' ]; then
 
   echo "1" > /healthy
-  echo "healthy"
+  echo "$(date) healthy"
 
   sleep 10
 
   rm /healthy
-  echo "unhealthy"
+  echo "$(date) unhealthy"
 
   sleep 300
 
