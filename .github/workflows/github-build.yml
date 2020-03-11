@@ -21,6 +21,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build docker container
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
         run: |
           curl -fsSL https://raw.githubusercontent.com/pschmitt/ci-setup-docker-buildx/master/setup.sh | bash
           ./buildx.sh
